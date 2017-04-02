@@ -3,4 +3,4 @@ Snort is an open-source, free and lightweight network intrusion detection system
 
 ## Sample Commands
 
-`docker run -it -e HOME_NET=1.2.3.4 --net=host --cap-add=NET_ADMIN snort /bin/bash`
+`docker run -it -e HOME_NET=1.2.3.4 --net=host --cap-add=NET_ADMIN dnif/snort /bin/bash`
