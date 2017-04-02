@@ -51,3 +51,35 @@ RUN cd /usr/local/src/snort-* && \
 ENV PATH /opt/snort/bin:$PATH
 
 RUN ldconfig
+
+RUN groupadd snort && \
+    useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort && \
+    mkdir /etc/snort /etc/snort/rules /usr/local/lib/snort_dynamicrules /var/log/snort && \
+    touch /etc/snort/rules/white_list.rules /etc/snort/rules/black_list.rules /etc/snort/rules/local.rules && \
+    chmod -R 5775 /etc/snort /var/log/snort /usr/local/lib/snort_dynamicrules && \
+    chown -R snort:snort /etc/snort /var/log/snort /usr/local/lib/snort_dynamicrules
+
+RUN cp /usr/local/src/snort-2.9.9.0/etc/*.conf* /etc/snort && \
+    cp /usr/local/src/snort-2.9.9.0/etc/*.map /etc/snort
+
+RUN cd /usr/local/src/ && \
+    wget https://www.snort.org/rules/community -O community.tar.gz && \
+    tar -xvf community.tar.gz && \
+    sed -i 's/include \$RULE\_PATH/# include \$RULE\_PATH/' /etc/snort/snort.conf && \
+    cd community-rules && \
+    rm snort.conf && \
+    cp * /etc/snort/rules && \
+    echo "include /etc/snort/rules/local.rules" >> /etc/snort/snort.conf && \
+    echo "include /etc/snort/rules/community.rules" >> /etc/snort/snort.conf && \
+    sed -i 's/WHITE\_LIST\_PATH \.\.\/rules/WHITE\_LIST\_PATH \/etc\/snort\/rules/' /etc/snort/snort.conf && \
+    sed -i 's/BLACK\_LIST\_PATH \.\.\/rules/BLACK\_LIST\_PATH \/etc\/snort\/rules/' /etc/snort/snort.conf 
+
+ENV HOME_NET "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
+
+ENV INTERFACE eth0
+
+RUN sed -i "s|ipvar HOME\_NET any|ipvar HOME\_NET $HOME_NET|" /etc/snort/snort.conf
+
+COPY kickstart.sh /usr/local/bin/
+
+RUN chmod +rx /usr/local/bin/kickstart.sh
