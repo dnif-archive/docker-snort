@@ -1,14 +1,12 @@
 FROM ubuntu:16.04
 
 RUN apt-get update
-RUN apt-get -y install libpcre3 libpcre3-dbg libpcre3-dev
-
-RUN apt-get -y install build-essential autoconf automake libtool libnet1-dev \
+RUN apt-get -y install libpcre3 libpcre3-dbg libpcre3-dev \
+    build-essential autoconf automake libtool libnet1-dev \
     libyaml-0-2 libyaml-dev zlib1g zlib1g-dev libcap-ng-dev libcap-ng0 \
     make flex bison git wget libmagic-dev pkg-config libnuma-dev strace \
-    perl libio-socket-ssl-perl libcrypt-ssleay-perl ca-certificates libwww-perl
-
-RUN apt-get -y install libpcap-dev
+    perl libio-socket-ssl-perl libcrypt-ssleay-perl ca-certificates libwww-perl && \
+    libpcap-dev python-pip redis-server python-pcapy python-dpkt libpcap-dev
 
 # Fetch source
 RUN cd /usr/local/src && \
@@ -52,6 +50,8 @@ ENV PATH /opt/snort/bin:$PATH
 
 RUN ldconfig
 
+RUN pip install pygeoip redis
+
 RUN groupadd snort && \
     useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort && \
     mkdir /etc/snort /etc/snort/rules /usr/local/lib/snort_dynamicrules /var/log/snort && \
@@ -60,7 +60,8 @@ RUN groupadd snort && \
     chown -R snort:snort /etc/snort /var/log/snort /usr/local/lib/snort_dynamicrules
 
 RUN cp /usr/local/src/snort-2.9.9.0/etc/*.conf* /etc/snort && \
-    cp /usr/local/src/snort-2.9.9.0/etc/*.map /etc/snort
+    cp /usr/local/src/snort-2.9.9.0/etc/*.map /etc/snort && \
+    ln -s /usr/local/bin/snort /usr/sbin/snort
 
 RUN cd /usr/local/src/ && \
     wget https://www.snort.org/rules/community -O community.tar.gz && \
