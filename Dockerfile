@@ -1,12 +1,12 @@
 FROM ubuntu:16.04
 
 RUN apt-get update
-RUN apt-get -y install libpcre3 libpcre3-dbg libpcre3-dev \
+RUN apt-get -y install libpcre3 libpcre3-dbg libpcre3-dev libpcap-dev\
     build-essential autoconf automake libtool libnet1-dev \
     libyaml-0-2 libyaml-dev zlib1g zlib1g-dev libcap-ng-dev libcap-ng0 \
     make flex bison git wget libmagic-dev pkg-config libnuma-dev strace \
-    perl libio-socket-ssl-perl libcrypt-ssleay-perl ca-certificates libwww-perl && \
-    libpcap-dev python-pip redis-server python-pcapy python-dpkt libpcap-dev
+    perl libio-socket-ssl-perl libcrypt-ssleay-perl ca-certificates libwww-perl \
+    python-pip redis-server python-pcapy python-dpkt
 
 # Fetch source
 RUN cd /usr/local/src && \
