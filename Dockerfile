@@ -50,7 +50,7 @@ ENV PATH /opt/snort/bin:$PATH
 
 RUN ldconfig
 
-RUN pip install pygeoip redis
+RUN pip install pygeoip redis dnif
 
 RUN groupadd snort && \
     useradd snort -r -s /sbin/nologin -c SNORT_IDS -g snort && \
@@ -84,3 +84,12 @@ RUN sed -i "s|ipvar HOME\_NET any|ipvar HOME\_NET $HOME_NET|" /etc/snort/snort.c
 COPY kickstart.sh /usr/local/bin/
 
 RUN chmod +rx /usr/local/bin/kickstart.sh
+
+RUN mkdir /usr/local/lookups && \
+    cd /usr/local/lookups && \
+    wget http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz && \
+    wget http://download.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz && \
+    gunzip GeoLiteCity.dat.gz GeoIPASNum.dat.gz
+
+RUN cd /usr/local/src/ && \
+    wget https://github.com/dnif/snort-agent/archive/snort-agent-0.9.tar.gz
