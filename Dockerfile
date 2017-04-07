@@ -95,8 +95,8 @@ RUN cd /usr/local/src/ && \
     cat /etc/snort/rules/emerging.conf >> /etc/snort/snort.conf
 
 RUN cd /usr/local/src/ && \
-    wget https://github.com/dnif/snort-agent/archive/0.6.tar.gz && \
-    tar -zxvf 0.6.tar.gz && \
+    wget https://github.com/dnif/snort-agent/archive/0.7.tar.gz && \
+    tar -zxvf 0.7.tar.gz && \
     mv snort-agent-* snort-agent
 
 COPY kickstart.sh /usr/local/bin/
