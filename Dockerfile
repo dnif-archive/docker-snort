@@ -6,7 +6,8 @@ RUN apt-get -y install libpcre3 libpcre3-dbg libpcre3-dev libpcap-dev\
     libyaml-0-2 libyaml-dev zlib1g zlib1g-dev libcap-ng-dev libcap-ng0 \
     make flex bison git wget libmagic-dev pkg-config libnuma-dev strace \
     perl libio-socket-ssl-perl libcrypt-ssleay-perl ca-certificates libwww-perl \
-    python-pip python-pcapy python-dpkt supervisor
+    python-pip python-pcapy python-dpkt supervisor openssh-server net-tools \
+    iputils-ping
 
 # Fetch source
 RUN cd /usr/local/src && \
@@ -71,7 +72,8 @@ RUN cd /usr/local/src/ && \
     echo "include /etc/snort/rules/local.rules" >> /etc/snort/snort.conf && \
     echo "include /etc/snort/rules/community.rules" >> /etc/snort/snort.conf && \
     sed -i 's/WHITE\_LIST\_PATH \.\.\/rules/WHITE\_LIST\_PATH \/etc\/snort\/rules/' /etc/snort/snort.conf && \
-    sed -i 's/BLACK\_LIST\_PATH \.\.\/rules/BLACK\_LIST\_PATH \/etc\/snort\/rules/' /etc/snort/snort.conf 
+    sed -i 's/BLACK\_LIST\_PATH \.\.\/rules/BLACK\_LIST\_PATH \/etc\/snort\/rules/' /etc/snort/snort.conf && \
+    sed -i -e '0,/\# output unified2/{//i\output unified2\: filename snort\.u2\, limit 50' -e '}' /etc/snort/snort.conf
 
 ENV HOME_NET "[10.0.0.0/8,172.16.0.0/12,192.168.0.0/16]"
 
@@ -99,12 +101,29 @@ RUN cd /usr/local/src/ && \
     tar -zxvf 0.7.tar.gz && \
     mv snort-agent-* snort-agent
 
-COPY kickstart.sh /usr/local/bin/
+# Setting up ssh on host
+RUN mkdir /var/run/sshd
+RUN echo 'root:screencast' | chpasswd
+RUN sed -i 's/PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
 
-RUN chmod +rx /usr/local/bin/kickstart.sh
+# SSH login fix. Otherwise user is kicked off after login
+RUN sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd
 
-CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
+ENV NOTVISIBLE "in users profile"
+RUN echo "export VISIBLE=now" >> /etc/profile
 
-CMD ["python", "/usr/local/src/snort-agent/snort-agent.py"]
+EXPOSE 22
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# COPY kickstart.sh /usr/local/bin/
+# RUN chmod +rx /usr/local/bin/kickstart.sh
+# CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
+ADD VERSION .
+CMD ["/usr/bin/supervisord"]
 
-# CMD ["supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+# CMD ["/usr/sbin/sshd", "-D"]
+#
+# COPY kickstart.sh /usr/local/bin/
+#
+# RUN chmod +rx /usr/local/bin/kickstart.sh
+#
+# CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
