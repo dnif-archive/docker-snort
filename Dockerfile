@@ -114,16 +114,8 @@ RUN echo "export VISIBLE=now" >> /etc/profile
 
 EXPOSE 22
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-# COPY kickstart.sh /usr/local/bin/
-# RUN chmod +rx /usr/local/bin/kickstart.sh
-# CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
+COPY kickstart.sh /usr/local/bin/
+RUN chmod +rx /usr/local/bin/kickstart.sh
+CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
 ADD VERSION .
 CMD ["/usr/bin/supervisord"]
-
-# CMD ["/usr/sbin/sshd", "-D"]
-#
-# COPY kickstart.sh /usr/local/bin/
-#
-# RUN chmod +rx /usr/local/bin/kickstart.sh
-#
-# CMD ["/bin/bash", "/usr/local/bin/kickstart.sh"]
